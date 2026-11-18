@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Web Developer Goals</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f5f6f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101318" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root { color-scheme: light; }
+
+/* Layout: a stack of quiet cards. Each main goal heads a card, sub goals nest below on a thin guide line, each parent carries a progress bar. */
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --fg: #1b2230;
+  --muted: #6a7485;
+  --line: #e2e6ec;
+  --track: #e8ebf0;
+  --accent: #2563eb;
+  --on-accent: #ffffff;
+  --danger: #c4372b;
+  --on-danger: #ffffff;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101318;
+    --card: #171b22;
+    --fg: #e7eaf0;
+    --muted: #8c96a6;
+    --line: #272d37;
+    --track: #272d37;
+    --accent: #6094f5;
+    --on-accent: #0c1424;
+    --danger: #f2766b;
+    --on-danger: #1a0a08;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101318;
+  --card: #171b22;
+  --fg: #e7eaf0;
+  --muted: #8c96a6;
+  --line: #272d37;
+  --track: #272d37;
+  --accent: #6094f5;
+  --on-accent: #0c1424;
+  --danger: #f2766b;
+  --on-danger: #1a0a08;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.4;
+  padding-block: 32px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+#app { display: flex; flex-direction: column; gap: 16px; max-width: 560px; margin: 0 auto; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 20px 20px;
+}
+.toolbar { display: flex; justify-content: flex-end; min-height: 28px; }
+.ghost {
+  font: inherit;
+  font-size: 13px;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.ghost:hover { color: var(--fg); }
+button:focus-visible, .cb input:focus-visible + .box, .txt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* rows */
+.row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 7px 0; }
+.body { min-width: 0; }
+.txt { font-size: 16px; line-height: 20px; overflow-wrap: anywhere; }
+.d0 > .row { padding-top: 4px; padding-bottom: 12px; }
+.d0 > .row > .body > .txt { font-size: 22px; line-height: 28px; font-weight: 600; text-wrap: balance; }
+.d0 > .row > .cb { margin-top: 5px; }
+.d2 > .row > .body > .txt { font-size: 15px; }
+.children { margin-left: 9px; padding-left: 15px; border-left: 1px solid var(--line); }
+.d0 > .children { margin-top: 2px; }
+.node.leaf.done > .row > .body > .txt { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--muted); }
+
+/* checkbox */
+.cb { position: relative; display: inline-flex; margin-top: 1px; cursor: pointer; }
+.cb input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.box { display: block; position: relative; width: 18px; height: 18px; border: 1.5px solid var(--muted); border-radius: 4px; transition: background-color .15s, border-color .15s; }
+.cb input:checked + .box { background: var(--accent); border-color: var(--accent); }
+.cb input:checked + .box::after {
+  content: ""; position: absolute; left: 4.5px; top: 0.5px; width: 4px; height: 9px;
+  border: solid var(--on-accent); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.cb input:indeterminate + .box { border-color: var(--accent); }
+.cb input:indeterminate + .box::after {
+  content: ""; position: absolute; left: 3px; top: 6.5px; width: 9px; height: 2px; border-radius: 1px; background: var(--accent);
+}
+.cb:has(input:disabled) { cursor: default; }
+.cb input:disabled + .box { opacity: 0.6; }
+.cb input:disabled:checked + .box, .cb input:disabled:indeterminate + .box { opacity: 1; }
+
+/* progress */
+.prog { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.track { flex: 1; height: 4px; background: var(--track); border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width .3s ease; }
+.count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.d0 .track { height: 6px; }
+.d0 > .row .count { font-size: 13px; }
+
+/* editing */
+input.txt {
+  display: block; width: 100%; font-family: inherit; color: var(--fg);
+  background: transparent; border: 0; border-bottom: 1px solid var(--line);
+  border-radius: 0; padding: 0 0 2px; outline: none;
+}
+input.txt:focus { border-bottom-color: var(--accent); outline: none; }
+.d0 > .row > .body > input.txt { font-size: 22px; line-height: 28px; font-weight: 600; }
+.acts { display: flex; gap: 2px; }
+.icon {
+  font: inherit; font-size: 18px; line-height: 1; width: 28px; height: 28px; padding: 0;
+  color: var(--muted); background: none; border: 0; border-radius: 6px; cursor: pointer;
+}
+.icon:hover { color: var(--fg); background: var(--track); }
+.icon.armed { width: auto; padding: 0 8px; font-size: 13px; color: var(--on-danger); background: var(--danger); }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+.add { font: inherit; font-size: 14px; color: var(--accent); background: none; border: 0; padding: 4px 0; cursor: pointer; }
+.del { font: inherit; font-size: 14px; color: var(--danger); background: none; border: 0; padding: 4px 0; cursor: pointer; }
+.del.armed { color: var(--on-danger); background: var(--danger); padding: 4px 10px; border-radius: 6px; }
+.newgoal {
+  display: block; width: 100%; margin-top: 16px; padding: 14px 0 0; text-align: left;
+  font: inherit; font-size: 14px; color: var(--muted); background: none; border: 0;
+  border-top: 1px solid var(--line); cursor: pointer;
+}
+.newgoal:hover { color: var(--fg); }
+.newgoal.solo { margin-top: 8px; padding-top: 0; border-top: 0; color: var(--accent); }
+.hint { margin: 0; color: var(--muted); font-size: 14px; }
+.status { max-width: 560px; margin: 12px auto 0; font-size: 12px; color: var(--muted); text-align: center; min-height: 16px; }
+
+@media (max-width: 440px) { .card { padding: 12px 14px 16px; } }
+@media (prefers-reduced-motion: reduce) { .fill, .box { transition: none; } }
+
+html { background: var(--bg); }
+body {
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: max(32px, calc(env(safe-area-inset-top, 0px) + 16px));
+  padding-bottom: max(40px, calc(env(safe-area-inset-bottom, 0px) + 24px));
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<p class="status" id="status"></p>
+<script>
+
+(function () {
+  var KEY = "web-developer-goals-v2";
+  var OLD_KEY = "web-developer-goals-v1";
+  var MAX_DEPTH = 3;
+
+  function uid() { return "n" + Math.random().toString(36).slice(2, 9); }
+
+  var DEFAULT = {
+    id: "root", text: "Be a web developer", done: false, children: [
+      { id: "html", text: "Learn HTML and CSS", done: false, children: [] },
+      { id: "js", text: "Learn JavaScript", done: false, children: [
+        { id: "react", text: "React", done: false, children: [] },
+        { id: "node", text: "Node.js", done: false, children: [] }
+      ] }
+    ]
+  };
+
+  function norm(n) {
+    if (!n || typeof n !== "object") return null;
+    var kids = Array.isArray(n.children) ? n.children.map(norm).filter(Boolean) : [];
+    return {
+      id: typeof n.id === "string" && n.id ? n.id : uid(),
+      text: typeof n.text === "string" ? n.text : "",
+      done: !!n.done && kids.length === 0,
+      children: kids
+    };
+  }
+
+  function normCards(d) {
+    var arr = Array.isArray(d) ? d : (d && Array.isArray(d.cards) ? d.cards : null);
+    return arr ? arr.map(norm).filter(Boolean) : null;
+  }
+
+  function loadLocal() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var c = normCards(JSON.parse(raw)); if (c) return c; }
+    } catch (e) {}
+    try {
+      var old = localStorage.getItem(OLD_KEY);
+      if (old) { var t = norm(JSON.parse(old)); if (t) return [t]; }
+    } catch (e) {}
+    return [norm(DEFAULT)];
+  }
+
+  var cards = loadLocal();
+  var editingId = null;
+  var reg = [];
+  var focusId = null;
+  var dirty = false;
+  var ref = null;
+
+  var app = document.getElementById("app");
+  var statusEl = document.getElementById("status");
+
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "class") el.className = attrs[k]; else el.setAttribute(k, attrs[k]);
+    }
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      el.append(c);
+    }
+    return el;
+  }
+
+  function stats(n) {
+    if (!n.children.length) return { done: n.done ? 1 : 0, total: 1 };
+    var d = 0, t = 0;
+    n.children.forEach(function (c) { var s = stats(c); d += s.done; t += s.total; });
+    return { done: d, total: t };
+  }
+
+  /* saving */
+  var saveTimer = null;
+  var saving = Promise.resolve();
+
+  function setStatus(mode) {
+    statusEl.textContent = mode === "db" ? "Progress saves automatically."
+      : mode === "local" ? "Saved on this phone." : "";
+  }
+
+  function saveLocal() {
+    try { localStorage.setItem(KEY, JSON.stringify(cards)); } catch (e) {}
+  }
+
+  function persist() {
+    dirty = true;
+    saveLocal();
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flush, 400);
+  }
+
+  function flush() {
+    if (!ref) return;
+    var snapshot = JSON.parse(JSON.stringify(cards));
+    saving = saving
+      .then(function () { return ref.set({ cards: snapshot, updatedAt: Date.now() }); })
+      .then(function () { setStatus("db"); })
+      .catch(function () { setStatus("local"); });
+  }
+
+  /* building the cards */
+  function updateAll() {
+    reg.forEach(function (r) {
+      var n = r.node, s = stats(n), leaf = n.children.length === 0, full, partial;
+      if (r.isRoot && leaf) { full = false; partial = false; }
+      else if (leaf) { full = n.done; partial = false; }
+      else { full = s.done === s.total; partial = !full && s.done > 0; }
+      r.input.checked = full;
+      r.input.indeterminate = partial;
+      r.el.classList.toggle("done", full);
+      if (r.fill) {
+        var pct = s.total ? Math.round(s.done / s.total * 100) : 0;
+        r.fill.style.width = pct + "%";
+        r.track.setAttribute("aria-valuenow", String(pct));
+        r.count.textContent = r.isRoot
+          ? (pct === 100 ? "All " + s.total + " done" : s.done + " of " + s.total + " done · " + pct + "%")
+          : s.done + "/" + s.total;
+      }
+    });
+  }
+
+  function addChild(node) {
+    var c = { id: uid(), text: "", done: false, children: [] };
+    node.children.push(c);
+    node.done = false;
+    focusId = c.id;
+    persist();
+    render();
+  }
+
+  function removeNode(parent, node) {
+    parent.children = parent.children.filter(function (c) { return c !== node; });
+    persist();
+    render();
+  }
+
+  function prune(n) {
+    n.children.forEach(prune);
+    n.children = n.children.filter(function (c) { return c.text.trim() || c.children.length; });
+    n.children.forEach(function (c) { if (!c.text.trim()) c.text = "Untitled"; });
+  }
+
+  function finishEdit() {
+    if (!editingId) return;
+    var c = cards.filter(function (x) { return x.id === editingId; })[0];
+    if (c) {
+      prune(c);
+      if (!c.text.trim()) {
+        if (c.children.length) c.text = "Untitled";
+        else cards = cards.filter(function (x) { return x !== c; });
+      }
+    }
+    editingId = null;
+  }
+
+  function addCard() {
+    finishEdit();
+    var c = { id: uid(), text: "", done: false, children: [] };
+    cards.push(c);
+    editingId = c.id;
+    focusId = c.id;
+    persist();
+    render();
+  }
+
+  function removeCard(card) {
+    cards = cards.filter(function (x) { return x !== card; });
+    if (editingId === card.id) editingId = null;
+    persist();
+    render();
+  }
+
+  function buildNode(node, parent, depth, editing) {
+    var isRoot = depth === 0;
+    var hasKids = node.children.length > 0;
+    var wrap = h("div", { "class": "node d" + Math.min(depth, 2) + (hasKids || isRoot ? "" : " leaf") });
+    var row = h("div", { "class": "row" });
+    var rec = { node: node, isRoot: isRoot, el: wrap };
+
+    var input = h("input", { type: "checkbox", "aria-label": node.text || "Untitled" });
+    var lbl = h("label", { "class": "cb" }, input, h("span", { "class": "box" }));
+    if (isRoot || hasKids) {
+      input.disabled = true;
+      lbl.title = "Checks itself when everything below it is done";
+    } else {
+      input.addEventListener("change", function () {
+        node.done = input.checked;
+        persist();
+        updateAll();
+      });
+    }
+    rec.input = input;
+
+    var body = h("div", { "class": "body" });
+    if (editing) {
+      var t = h("input", { type: "text", "class": "txt", "data-id": node.id, placeholder: isRoot ? "Main goal" : "New step", maxlength: "120" });
+      t.value = node.text;
+      t.addEventListener("input", function () { node.text = t.value; persist(); });
+      t.addEventListener("keydown", function (e) { if (e.key === "Enter") t.blur(); });
+      body.append(t);
+    } else {
+      body.append(h("div", { "class": "txt" }, node.text || "Untitled"));
+    }
+
+    if (hasKids) {
+      rec.fill = h("div", { "class": "fill" });
+      rec.track = h("div", { "class": "track", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-label": "Progress" }, rec.fill);
+      rec.count = h("span", { "class": "count" });
+      body.append(h("div", { "class": "prog" }, rec.track, rec.count));
+    } else if (isRoot) {
+      body.append(h("p", { "class": "hint" }, "No steps yet. Tap Edit to add one."));
+    }
+
+    row.append(lbl, body);
+
+    if (editing && !isRoot) {
+      var acts = h("div", { "class": "acts" });
+      if (depth < MAX_DEPTH) {
+        var plus = h("button", { type: "button", "class": "icon", "aria-label": "Add a step under this", title: "Add a step under this" }, "+");
+        plus.addEventListener("click", function () { addChild(node); });
+        acts.append(plus);
+      }
+      var del = h("button", { type: "button", "class": "icon", "aria-label": "Delete", title: "Delete" }, "×");
+      del.addEventListener("click", function () {
+        if (node.children.length && !del.classList.contains("armed")) {
+          del.classList.add("armed");
+          del.textContent = "Delete all?";
+          setTimeout(function () { del.classList.remove("armed"); del.textContent = "×"; }, 3000);
+          return;
+        }
+        removeNode(parent, node);
+      });
+      acts.append(del);
+      row.append(acts);
+    }
+
+    wrap.append(row);
+    if (hasKids) {
+      var kids = h("div", { "class": "children" });
+      node.children.forEach(function (c) { kids.append(buildNode(c, node, depth + 1, editing)); });
+      wrap.append(kids);
+    }
+    reg.push(rec);
+    return wrap;
+  }
+
+  function newGoalButton(solo) {
+    var b = h("button", { type: "button", "class": "newgoal" + (solo ? " solo" : "") }, "+ Add goal");
+    b.addEventListener("click", addCard);
+    return b;
+  }
+
+  function buildCard(card, isLast) {
+    var editing = editingId === card.id;
+    var toggle = h("button", { type: "button", "class": "ghost" }, editing ? "Done" : "Edit");
+    toggle.addEventListener("click", function () {
+      finishEdit();
+      if (!editing) editingId = card.id;
+      persist();
+      render();
+    });
+    var el = h("div", { "class": "card" }, h("div", { "class": "toolbar" }, toggle), buildNode(card, null, 0, editing));
+
+    if (editing) {
+      var addSub = h("button", { type: "button", "class": "add" }, "+ Add sub goal");
+      addSub.addEventListener("click", function () { addChild(card); });
+      var delCard = h("button", { type: "button", "class": "del" }, "Delete goal");
+      delCard.addEventListener("click", function () {
+        if (card.children.length && !delCard.classList.contains("armed")) {
+          delCard.classList.add("armed");
+          delCard.textContent = "Delete everything?";
+          setTimeout(function () { delCard.classList.remove("armed"); delCard.textContent = "Delete goal"; }, 3000);
+          return;
+        }
+        removeCard(card);
+      });
+      el.append(h("div", { "class": "foot" }, addSub, delCard));
+    }
+
+    if (isLast) el.append(newGoalButton(false));
+    return el;
+  }
+
+  function render() {
+    reg = [];
+    app.replaceChildren();
+    cards.forEach(function (card, i) { app.append(buildCard(card, i === cards.length - 1)); });
+    if (!cards.length) {
+      app.append(h("div", { "class": "card" }, h("p", { "class": "hint" }, "No goals yet."), newGoalButton(true)));
+    }
+    updateAll();
+    if (focusId) {
+      var el = app.querySelector('[data-id="' + CSS.escape(focusId) + '"]');
+      if (el) el.focus();
+      focusId = null;
+    }
+  }
+
+  render();
+
+  setStatus("local");
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+}
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+</script>
+</body>
+</html>
